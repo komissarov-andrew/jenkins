@@ -3,66 +3,58 @@
   hosts: all
   become: yes
 
-  vars:
-        source_folder: ./website/
-        destin_folder: /var/www/html/
-
   tasks:
-      - name: Check Linux Version
-        debug: var=ansible_os_family
+  - name: Check Linux Version
+    debug: var=ansible_os_family
 
-      - block:    #Web server for Debian
-          - name: installa dependency
-              apt:
-                name: "{{item}}"
-                state: present
-                update_cache: yes
-              loop:
-                - apt-transport-https
-                - ca-certificates
-                - curl
-                - gnupg-agent
-                - software-properties-commonst
+  - block:    #Docker for Debian
+      - name: install a dependency
+          apt:
+            name: "{{item}}"
+            state: present
+            update_cache: yes
+          loop:
+            - apt-transport-https
+            - ca-certificates
+            - curl
+            - gnupg-agent
+            - software-properties-commonst
 
-          - name: add GPG key
-              apt_key:
-                url: https://download.docker.com/linux/ubuntu/gpg
-                state: present
+      - name: add GPG key
+          apt_key:
+            url: https://download.docker.com/linux/ubuntu/gpg
+            state: present
 
-          - name: add docker repository to apt
-              apt_repository:
-                repo: deb https://download.docker.com/linux/ubuntu bionic stable
-                state: present
+      - name: add docker repository to apt
+          apt_repository:
+            repo: deb https://download.docker.com/linux/ubuntu bionic stable
+            state: present
 
-          - name: install docker
-              apt:
-                name: "{{item}}"
-                state: latest
-                update_cache: yes
-              loop:
-                - docker-ce
-                - docker-ce-cli
-                - containerd.io
+      - name: install docker
+          apt:
+            name: "{{item}}"
+            state: latest
+            update_cache: yes
+          loop:
+            - docker-ce
+            - docker-ce-cli
+            - containerd.io
 
-          - name: enable docker
-              service:
-                name: docker
-                state: started
-                enabled: yes
+      - name: enable docker
+          service:
+            name: docker
+            state: started
+            enabled: yes
 
-          - name: Add user to docker group
-            user:
-              name: user
-              groups: docker
-              append: yes
+      - name: Add user to docker group
+        user:
+          name: user
+          groups: docker
+          append: yes
 
-        when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian"
 
-      - block:    #web server for RedHat
-          - name: Install Docker
-          gather_facts: No
-          hosts: docker
-
+      - block:    #Docker for RedHat
           tasks:
             - name: Install yum utils
               yum:
