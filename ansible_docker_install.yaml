@@ -90,6 +90,8 @@
             groups: docker
             append: yes
 
+      when: ansible_os_family == "RedHat"
+
   handlers:
     - name: restart docker
       service:
