@@ -5,7 +5,7 @@
 
   tasks:
     - name: Docker for Debian
-      block:
+    - block:
         - name: install a dependency
           apt:
             name: "{{item}}"
@@ -52,7 +52,7 @@
 
       when: ansible_os_family == "Debian"
 
-      block:
+    - block:
         - name: Install yum utils
           yum:
             name: yum-utils
