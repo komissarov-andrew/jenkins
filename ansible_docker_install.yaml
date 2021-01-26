@@ -1,14 +1,12 @@
 ---
-- name: Install nginx and upload start page
+- name: Install docker engine
   hosts: all
   become: yes
 
   tasks:
-  - name: Check Linux Version
-    debug: var=ansible_os_family
-
-  - block:    #Docker for Debian
-      - name: install a dependency
+    - name: Docker for Debian
+      block:
+        - name: install a dependency
           apt:
             name: "{{item}}"
             state: present
@@ -20,17 +18,17 @@
             - gnupg-agent
             - software-properties-commonst
 
-      - name: add GPG key
+        - name: add GPG key
           apt_key:
             url: https://download.docker.com/linux/ubuntu/gpg
             state: present
 
-      - name: add docker repository to apt
+        - name: add docker repository to apt
           apt_repository:
             repo: deb https://download.docker.com/linux/ubuntu bionic stable
             state: present
 
-      - name: install docker
+        - name: install docker
           apt:
             name: "{{item}}"
             state: latest
@@ -40,58 +38,57 @@
             - docker-ce-cli
             - containerd.io
 
-      - name: enable docker
+        - name: enable docker
           service:
             name: docker
             state: started
             enabled: yes
 
-      - name: Add user to docker group
-        user:
-          name: user
-          groups: docker
-          append: yes
+        - name: Add user to docker group
+          user:
+            name: user
+            groups: docker
+            append: yes
 
-    when: ansible_os_family == "Debian"
+      when: ansible_os_family == "Debian"
 
-      - block:    #Docker for RedHat
-          tasks:
-            - name: Install yum utils
-              yum:
-                name: yum-utils
-                state: latest
+      block:
+        - name: Install yum utils
+          yum:
+            name: yum-utils
+            state: latest
 
-            - name: Install device-mapper-persistent-data
-              yum:
-                name: device-mapper-persistent-data
-                state: latest
+        - name: Install device-mapper-persistent-data
+          yum:
+            name: device-mapper-persistent-data
+            state: latest
 
-            - name: Install lvm2
-              yum:
-                name: lvm2
-                state: latest
+        - name: Install lvm2
+          yum:
+            name: lvm2
+            state: latest
 
-            - name: Add Docker repo
-              get_url:
-                url: https://download.docker.com/linux/centos/docker-ce.repo
-                dest: /etc/yum.repos.d/docker-ce.repo
+        - name: Add Docker repo
+          get_url:
+            url: https://download.docker.com/linux/centos/docker-ce.repo
+            dest: /etc/yum.repos.d/docker-ce.repo
 
-            - name: Install Docker
-              package:
-                name: docker-ce
-                state: latest
+        - name: Install Docker
+          package:
+            name: docker-ce
+            state: latest
 
-            - name: Start Docker service
-              service:
-                name: docker
-                state: started
-                enabled: yes
+        - name: Start Docker service
+          service:
+            name: docker
+            state: started
+            enabled: yes
 
-            - name: Add user to docker group
-              user:
-                name: user
-                groups: docker
-                append: yes
+        - name: Add user to docker group
+          user:
+            name: user
+            groups: docker
+            append: yes
 
   handlers:
     - name: restart docker
